@@ -36,18 +36,22 @@ class MessageController extends Controller
             ]);
         }
 
+        //Matching all phone numbers in recipients list
         $numbers = $input['recipient'];
         preg_match_all('/\b\d{10,13}\b/', $numbers ,$matches);
+
+        //Combining phone numbers together and adding a space before to ensure effective regex matching
         $numbers = join(", ", $matches[0]);
         $numbers = " {$numbers}";
 
+        //Replacing leading zeros in nigerian numbers with 234
         $numbers = preg_replace('/(,\s*|\s+)(0)(70|80|90|81)(\d+)/', ' 234$3$4', $numbers);
-
         $numbers = " {$numbers}";
+
         $total_price = 0;
         $total_numbers = 0;
 
-
+        //Opening Price List file
         $handle = @fopen(storage_path() . "/app/public/priceList.txt", "r");
         if ($handle) {
             while (($line = fgets($handle)) !== false) {
@@ -65,6 +69,7 @@ class MessageController extends Controller
 
             fclose($handle);
 
+            //Adding up final data
             $finalData['senderid'] = $input['senderid'];
             $finalData['total_numbers'] = $total_numbers;
             $finalData['total'] = $total_price;
@@ -74,6 +79,7 @@ class MessageController extends Controller
                 'items' => $finalData
             ]);
         } else {
+            //when file is not found or a file error occurs
             return json_encode([
                 "message" => "A server error occurred",
                 "error" => [
